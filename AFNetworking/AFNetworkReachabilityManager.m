@@ -28,11 +28,23 @@
 #import <ifaddrs.h>
 #import <netdb.h>
 
+/**
+ 网络状态发生改变通知
+ */
 NSString * const AFNetworkingReachabilityDidChangeNotification = @"com.alamofire.networking.reachability.change";
+/**
+ 网络状态发生改变后收到的通知userInfo根据此key 取出网络状态
+ */
 NSString * const AFNetworkingReachabilityNotificationStatusItem = @"AFNetworkingReachabilityNotificationStatusItem";
 
+/**
+ 定义一个网络状态变化回调block status  为一个枚举值
+ */
 typedef void (^AFNetworkReachabilityStatusBlock)(AFNetworkReachabilityStatus status);
 
+/**
+ 将网络状态枚举值转为字符串
+ */
 NSString * AFStringFromNetworkReachabilityStatus(AFNetworkReachabilityStatus status) {
     switch (status) {
         case AFNetworkReachabilityStatusNotReachable:
@@ -47,11 +59,19 @@ NSString * AFStringFromNetworkReachabilityStatus(AFNetworkReachabilityStatus sta
     }
 }
 
+/**
+ 根据SCNetworkReachabilityFlags这个网络标记来转换成我们在开发中经常使用的网络状态枚举类型
+ */
 static AFNetworkReachabilityStatus AFNetworkReachabilityStatusForFlags(SCNetworkReachabilityFlags flags) {
+    // 是否可以到达
     BOOL isReachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
+    // 在联网之前是否需要建立连接
     BOOL needsConnection = ((flags & kSCNetworkReachabilityFlagsConnectionRequired) != 0);
+    // 是否可以自动连接
     BOOL canConnectionAutomatically = (((flags & kSCNetworkReachabilityFlagsConnectionOnDemand ) != 0) || ((flags & kSCNetworkReachabilityFlagsConnectionOnTraffic) != 0));
+    // 是否可以在不需要用户设置的情况下建立连接
     BOOL canConnectWithoutUserInteraction = (canConnectionAutomatically && (flags & kSCNetworkReachabilityFlagsInterventionRequired) == 0);
+    // 是否可以联网 联网条件是:(1.网络可以到达 && 2.不需要建立连接或者可以在不用用户设置的情况下建立连接)
     BOOL isNetworkReachable = (isReachable && (!needsConnection || canConnectWithoutUserInteraction));
 
     AFNetworkReachabilityStatus status = AFNetworkReachabilityStatusUnknown;
